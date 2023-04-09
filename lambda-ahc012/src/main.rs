@@ -50,7 +50,14 @@ async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error
     let input = Input::from_source(&mut source);
 
     // s3 output
+    let region = "ap-northeast-1".parse()?;
+    let credentials = Credentials::default()?;
+    let bucket_out = Bucket::new(&bucket_out, region, credentials)?;
     let path_out = format!("{}/{:04}.json", contest_name, seed);
+
+    // 結果を出力
+    let content = "{}".as_bytes();
+    bucket_out.put_object(&path_out, content).await?;
 
     // Prepare the response
     let resp = Response {
