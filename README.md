@@ -22,3 +22,7 @@ cargo lambda deploy --profile dev lambda-ahc-template
 ```shell
 cargo run --release --bin gen txt/seeds.txt
 ```
+
+# 参考
+https://github.com/rust-lang-ja/atcoder-rust-resources
+https://github.com/rust-lang-ja/atcoder-rust-base/tree/ja
