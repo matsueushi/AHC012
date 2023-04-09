@@ -8,6 +8,7 @@ use s3::creds::Credentials;
 
 #[derive(Deserialize)]
 struct Request {
+    bucket_name: String,
     contest_name: String,
     seed: usize,
 }
@@ -15,25 +16,29 @@ struct Request {
 #[derive(Serialize)]
 struct Response {
     req_id: String,
+    input_path: String,
     msg: String,
 }
 
 async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
     // Extract some useful info from the request
-    let _contest_name = event.payload.contest_name;
-    let _seed = event.payload.seed;
+    let bucket_name = event.payload.bucket_name;
+    let contest_name = event.payload.contest_name;
+    let seed = event.payload.seed;
 
     // s3
     // https://docs.rs/rust-s3/latest/s3/bucket/struct.Bucket.html#method.get_object
-    let bucket_name = "procon-inputs";
     let region = "ap-northeast-1".parse()?;
     let credentials = Credentials::default()?;
-    let bucket = Bucket::new(bucket_name, region, credentials)?;
-    let response_data = bucket.get_object("/ahc012/0019.txt").await?;
+    let bucket = Bucket::new(&bucket_name, region, credentials)?;
+
+    let input_path = format!("{}/{:04}.txt", contest_name, seed);
+    let response_data = bucket.get_object(&input_path).await?;
 
     // Prepare the response
     let resp = Response {
         req_id: event.context.request_id,
+        input_path,
         msg: format!("response_data {:?}", response_data),
     };
 
