@@ -37,7 +37,6 @@ async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error
         msg: format!("response_data {:?}", response_data),
     };
 
-    // Return `Response` (it will be serialized to JSON automatically by the runtime)
     Ok(resp)
 }
 
