@@ -11,3 +11,5 @@ Cargo.lock
 
 in/
 tools/
+
+.DS_Store
