@@ -13,7 +13,8 @@ use solver::*;
 
 #[derive(Deserialize)]
 struct Request {
-    bucket_name: String,
+    bucket_in: String,
+    bucket_out: String,
     contest_name: String,
     seed: usize,
 }
@@ -21,33 +22,41 @@ struct Request {
 #[derive(Serialize)]
 struct Response {
     req_id: String,
-    input_path: String,
+    path_in: String,
+    path_out: String,
     msg: String,
 }
 
 async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error> {
     // Extract some useful info from the request
-    let bucket_name = event.payload.bucket_name;
+    let bucket_in = event.payload.bucket_in;
+    let bucket_out = event.payload.bucket_out;
     let contest_name = event.payload.contest_name;
     let seed = event.payload.seed;
 
-    // s3
+    // s3 input
     // https://docs.rs/rust-s3/latest/s3/bucket/struct.Bucket.html#method.get_object
     let region = "ap-northeast-1".parse()?;
     let credentials = Credentials::default()?;
-    let bucket = Bucket::new(&bucket_name, region, credentials)?;
 
-    let input_path = format!("{}/{:04}.txt", contest_name, seed);
-    let response_data = bucket.get_object(&input_path).await?;
+    let bucket_in = Bucket::new(&bucket_in, region, credentials)?;
+    let path_in = format!("{}/{:04}.txt", contest_name, seed);
+    let response_data = bucket_in.get_object(&path_in).await?;
 
     let buf_reader = BufReader::new(response_data.as_slice());
     let mut source = LineSource::new(buf_reader);
+
+    // parse input
     let input = Input::from_source(&mut source);
+
+    // s3 output
+    let path_out = format!("{}/{:04}.json", contest_name, seed);
 
     // Prepare the response
     let resp = Response {
         req_id: event.context.request_id,
-        input_path,
+        path_in,
+        path_out,
         msg: format!("input {:?}", input),
     };
 

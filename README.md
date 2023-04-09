@@ -36,7 +36,7 @@ cargo run --bin solver < in/0000.txt
 # Lambda関数の実行
 [LambdaにS3の読み込み権限を付与する](https://dev.classmethod.jp/articles/get-s3-object-with-python-in-lambda/)必要あり
 ```shell
-aws --profile dev lambda invoke --function-name lambda-ahc012 --payload '{ "bucket_name" : "procon-inputs", "contest_name": "ahc012", "seed": 0 }' out/cloud/test.json
+aws --profile dev lambda invoke --function-name lambda-ahc012 --payload '{ "bucket_in" : "procon-inputs", "bucket_out" : "procon-outputs", "contest_name": "ahc012", "seed": 0 }' out/cloud/test.json
 ```
 
 # 参考
