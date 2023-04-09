@@ -1,10 +1,15 @@
 use lambda_runtime::{run, service_fn, Error, LambdaEvent};
 
 use serde::{Deserialize, Serialize};
+use std::io::BufReader;
 
 use anyhow::Result;
 use s3::bucket::Bucket;
 use s3::creds::Credentials;
+
+use proconio::source::line::LineSource;
+
+use solver::*;
 
 #[derive(Deserialize)]
 struct Request {
@@ -35,11 +40,15 @@ async fn function_handler(event: LambdaEvent<Request>) -> Result<Response, Error
     let input_path = format!("{}/{:04}.txt", contest_name, seed);
     let response_data = bucket.get_object(&input_path).await?;
 
+    let buf_reader = BufReader::new(response_data.as_slice());
+    let mut source = LineSource::new(buf_reader);
+    let input = Input::from_source(&mut source);
+
     // Prepare the response
     let resp = Response {
         req_id: event.context.request_id,
         input_path,
-        msg: format!("response_data {:?}", response_data),
+        msg: format!("input {:?}", input),
     };
 
     Ok(resp)

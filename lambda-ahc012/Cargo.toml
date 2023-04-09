@@ -27,3 +27,7 @@ openssl = { version = "0.10.48", features = ["vendored"] }
 
 rust-s3 = "0.33"
 anyhow = "1.0.70"
+
+solver = { path = "../solver" }
+
+proconio = { version = "=0.3.6", features = ["derive"] }
