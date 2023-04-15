@@ -7,6 +7,5 @@ fn main() {
     let stdin = std::io::stdin();
     let mut source = LineSource::new(BufReader::new(stdin));
     let input = Input::from_source(&mut source);
-
-    println!("{:?}", input);
+    solve(&input);
 }

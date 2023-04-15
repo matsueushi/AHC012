@@ -1,5 +1,9 @@
 # AHC012
 
+#  AtCoder 10th Anniversary
+問題 -> https://atcoder.jp/contests/ahc012/tasks/ahc012_a
+ビジュアライザ -> https://img.atcoder.jp/ahc012/f756367b32.html?lang=ja
+
 # AWSの認証情報
 ```shell
 aws configure --profile dev
@@ -30,7 +34,7 @@ aws --profile dev s3 cp ./in s3://procon-inputs/ahc012 --recursive
 
 # ローカルでの実行
 ```shell
-cargo run --bin solver < in/0000.txt
+cargo run --bin solver < in/0000.txt > out/local/0000.txt
 ```
 
 # Lambda関数の実行
