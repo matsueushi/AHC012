@@ -46,3 +46,5 @@ aws --profile dev lambda invoke --function-name lambda-ahc012 --payload '{ "buck
 # 参考
 https://github.com/rust-lang-ja/atcoder-rust-resources
 https://github.com/rust-lang-ja/atcoder-rust-base/tree/ja
+
+全てコピー->ggVGy
