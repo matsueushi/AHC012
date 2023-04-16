@@ -3,7 +3,6 @@ use rand::{Rng, SeedableRng};
 use std::io::BufRead;
 
 const D_MAX: usize = 10;
-const R: i64 = 10000;
 const L: i64 = 1_000_000_000;
 
 // 入力
@@ -75,42 +74,63 @@ impl std::fmt::Display for CutLines {
 
 // カットの情報
 struct Cut {
-    xs: Vec<i64>,
-    ys: Vec<i64>,
+    us: Vec<usize>, // カットする圧縮後のx座標
+    vs: Vec<usize>, // カットする圧縮後のy座標
 }
 
 impl Cut {
-    fn lines(&self) -> CutLines {
+    fn lines(&self, cake: &Cake) -> CutLines {
         let mut cut_lines = CutLines::new();
-        for &x in &self.xs {
+        for &u in &self.us {
+            let x = cake.xs[u];
             cut_lines.add_vertical(x);
         }
-        for &y in &self.ys {
+        for &v in &self.vs {
+            let y = cake.ys[v];
             cut_lines.add_horizontal(y);
         }
         cut_lines
     }
 }
 
+// 座標圧縮して使いやすい状態になっているケーキ
+struct Cake {
+    xs: Vec<i64>, // 圧縮後のx座標
+    ys: Vec<i64>, // 圧縮後のy座標
+}
+
+impl Cake {
+    fn new(input: &Input) -> Self {
+        let mut xs = Vec::new();
+        let mut ys = Vec::new();
+        for &(x, y) in &input.xy {
+            xs.push(x);
+            ys.push(y);
+        }
+        Self { xs, ys }
+    }
+}
+
 pub fn solve(input: &Input) {
+    let cake = Cake::new(&input);
+
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
 
     let k = input.k;
-    let d = R as usize / k;
+    let step_x = 2 * cake.xs.len() / k;
+    let step_y = 2 * cake.ys.len() / k;
     for _ in 0..50 {
-        let mut xs = Vec::new();
-        let mut ys = Vec::new();
-        for x in (-R..R).step_by(4 * d) {
-            let d = d as i64;
-            let r = rng.gen_range(-d, d);
-            xs.push(x + r);
+        let mut us = Vec::new();
+        let mut vs = Vec::new();
+        for u in (0..cake.xs.len() - step_x).step_by(step_x) {
+            let r = rng.gen_range(0, step_x / 2);
+            us.push(u + r);
         }
-        for y in (-R..R).step_by(4 * d) {
-            let d = d as i64;
-            let r = rng.gen_range(-d, d);
-            ys.push(y + r);
+        for v in (0..cake.ys.len() - step_y).step_by(step_y) {
+            let r = rng.gen_range(0, step_y / 2);
+            vs.push(v + r);
         }
-        let cut = Cut { xs, ys };
-        println!("{}", cut.lines());
+        let cut = Cut { us, vs };
+        println!("{}", cut.lines(&cake));
     }
 }
