@@ -4,7 +4,6 @@
 use proconio::{input, source::Source};
 // use rand::{Rng, SeedableRng};
 use std::io::BufRead;
-use std::iter;
 
 const D_MAX: usize = 10;
 const L: i64 = 1_000_000_000;
@@ -108,9 +107,22 @@ impl Cut {
         }
         cut_lines
     }
+
+    // スコアを計算したい
+    fn score(&self, cake: &Cake) -> usize {
+        let ss = vec![0; 10];
+        for u in 0..self.us.len() {
+            let x = cake.xs[u];
+            for v in 0..self.vs.len() {
+                let y = cake.ys[v];
+            }
+        }
+        12345
+    }
 }
 
 // 座標圧縮して使いやすい状態になっているケーキ
+#[derive(Debug)]
 struct Cake {
     xs: Vec<i64>,        // 圧縮後のx座標
     ys: Vec<i64>,        // 圧縮後のy座標
@@ -119,12 +131,14 @@ struct Cake {
 
 impl Cake {
     fn new(input: &Input) -> Self {
-        let mut xs = Vec::new();
-        let mut ys = Vec::new();
+        let mut xs = vec![-L];
+        let mut ys = vec![-L];
         for &(x, y) in &input.xy {
             xs.push(x);
             ys.push(y);
         }
+        xs.push(L);
+        ys.push(L);
         xs.sort();
         ys.sort();
         xs.dedup();
@@ -139,20 +153,22 @@ impl Cake {
             zs[i][j] += 1;
         }
 
-        let mut cs = vec![vec![0; m + 1]; n + 1];
+        let mut cs = vec![vec![0; m]; n];
+        // x 方向
         for i in 0..n {
-            for j in 0..m {
-                cs[i + 1][j + 1] = cs[i + 1][j] + zs[i][j];
+            for j in 1..m {
+                cs[i][j] = cs[i][j - 1] + zs[i][j];
             }
         }
         for j in 0..m {
-            for i in 0..n {
-                cs[i + 1][j + 1] += cs[i][j + 1];
+            for i in 1..n {
+                cs[i][j] += cs[i - 1][j];
             }
         }
 
         println!("{:?}", xs);
         println!("{:?}", ys);
+        println!("{:?}", cs);
         Self { xs, ys, cs }
     }
 }
@@ -185,19 +201,22 @@ mod tests {
     #[test]
     fn test_cake() {
         let input = Input {
-            n: 1 * 1 + 2 * 1 + 3 * 1,
+            n: 1 * 1 + 3 * 1,
             k: 10,
-            a: vec![1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
-            xy: vec![
-                (1000, 1000),
-                (2000, 2000),
-                (1000, 2000),
-                (3000, 3000),
-                (4000, 4000),
-                (5000, 5000),
-            ],
+            a: vec![1, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+            xy: vec![(1000, 1000), (2000, 2000), (1000, 2000), (3000, 3000)],
         };
         println!("input:");
         println!("{}", input);
+
+        let cake = Cake::new(&input);
+        println!("{:?}", cake);
+
+        let cut = Cut {
+            us: vec![1],
+            vs: vec![1],
+        };
+
+        println!("{}", cut.score(&cake));
     }
 }
