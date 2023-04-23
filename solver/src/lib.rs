@@ -4,6 +4,7 @@
 use proconio::{input, source::Source};
 // use rand::{Rng, SeedableRng};
 use std::io::BufRead;
+use std::iter;
 
 const D_MAX: usize = 10;
 const L: i64 = 1_000_000_000;
@@ -109,15 +110,45 @@ impl Cut {
     }
 
     // スコアを計算したい
-    fn score(&self, cake: &Cake) -> usize {
-        let ss = vec![0; 10];
-        for u in 0..self.us.len() {
-            let x = cake.xs[u];
-            for v in 0..self.vs.len() {
-                let y = cake.ys[v];
+    fn score(&self, input: &Input, cake: &Cake) -> usize {
+        // println!("{:?} {:?}", self.us, self.vs);
+
+        let ub = cake.xs.len() - 1;
+        let uus = iter::once(&0)
+            .chain(&self.us)
+            .chain(iter::once(&ub))
+            .collect::<Vec<_>>();
+
+        let vb = cake.ys.len() - 1;
+        let vvs = iter::once(&0)
+            .chain(&self.vs)
+            .chain(iter::once(&vb))
+            .collect::<Vec<_>>();
+
+        // println!("{:?}", uus);
+        // println!("{:?}", vvs);
+
+        let mut b = vec![0; 10];
+        for u in uus.windows(2) {
+            for v in vvs.windows(2) {
+                // println!("{:?} {:?}", u, v);
+                let (&u0, &u1) = (u[0], u[1]);
+                let (&v0, &v1) = (v[0], v[1]);
+                let c = cake.count(u0, u1, v0, v1);
+                // println!("{}", c);
+                if c >= 1 && c <= D_MAX {
+                    b[c - 1] += 1;
+                }
             }
         }
-        12345
+
+        let asum = input.a.iter().sum::<usize>();
+        let mut minabsum = 0;
+        for i in 0..D_MAX {
+            minabsum += input.a[i].min(b[i]);
+        }
+        let score = (1_000_000.0 * (minabsum as f64 / asum as f64)).round() as usize;
+        score
     }
 }
 
@@ -171,6 +202,10 @@ impl Cake {
         println!("{:?}", cs);
         Self { xs, ys, cs }
     }
+
+    fn count(&self, u0: usize, u1: usize, v0: usize, v1: usize) -> usize {
+        self.cs[u1][v1] - self.cs[u1][v0] - self.cs[u0][v1] + self.cs[u0][v0]
+    }
 }
 
 pub fn solve(input: &Input) {
@@ -217,6 +252,9 @@ mod tests {
             vs: vec![1],
         };
 
-        println!("{}", cut.score(&cake));
+        let lines = cut.lines(&cake);
+        println!("{}", lines);
+
+        println!("{}", cut.score(&input, &cake));
     }
 }
