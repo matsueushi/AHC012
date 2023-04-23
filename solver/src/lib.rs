@@ -2,7 +2,7 @@
 #![allow(dead_code)]
 
 use proconio::{input, source::Source};
-// use rand::{Rng, SeedableRng};
+use rand::{Rng, SeedableRng};
 use std::io::BufRead;
 use std::iter;
 
@@ -89,7 +89,24 @@ impl std::fmt::Display for CutLines {
     }
 }
 
+struct Pieces {
+    b: [usize; 10],
+}
+
+impl Pieces {
+    fn score(&self, input: &Input) -> usize {
+        let asum = input.a.iter().sum::<usize>();
+        let mut minabsum = 0;
+        for i in 0..D_MAX {
+            minabsum += input.a[i].min(self.b[i]);
+        }
+        let score = (1_000_000.0 * (minabsum as f64 / asum as f64)).round() as usize;
+        score
+    }
+}
+
 // カットの情報
+#[derive(Debug, Clone)]
 struct Cut {
     us: Vec<usize>, // カットする圧縮後のx座標
     vs: Vec<usize>, // カットする圧縮後のy座標
@@ -110,9 +127,7 @@ impl Cut {
     }
 
     // スコアを計算したい
-    fn score(&self, input: &Input, cake: &Cake) -> usize {
-        // println!("{:?} {:?}", self.us, self.vs);
-
+    fn pieces(&self, cake: &Cake) -> Pieces {
         let ub = cake.xs.len() - 1;
         let uus = iter::once(&0)
             .chain(&self.us)
@@ -128,7 +143,7 @@ impl Cut {
         // println!("{:?}", uus);
         // println!("{:?}", vvs);
 
-        let mut b = vec![0; 10];
+        let mut b = [0; 10];
         for u in uus.windows(2) {
             for v in vvs.windows(2) {
                 // println!("{:?} {:?}", u, v);
@@ -142,13 +157,7 @@ impl Cut {
             }
         }
 
-        let asum = input.a.iter().sum::<usize>();
-        let mut minabsum = 0;
-        for i in 0..D_MAX {
-            minabsum += input.a[i].min(b[i]);
-        }
-        let score = (1_000_000.0 * (minabsum as f64 / asum as f64)).round() as usize;
-        score
+        Pieces { b }
     }
 }
 
@@ -197,9 +206,6 @@ impl Cake {
             }
         }
 
-        println!("{:?}", xs);
-        println!("{:?}", ys);
-        println!("{:?}", cs);
         Self { xs, ys, cs }
     }
 
@@ -210,13 +216,11 @@ impl Cake {
 
 pub fn solve(input: &Input) {
     let cake = Cake::new(&input);
-    // eprintln!("{}", cake.xs.len());
-    // eprintln!("{}", cake.ys.len());
-    // let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
 
     let k = input.k;
     let step_x = 2 * cake.xs.len() / k;
     let step_y = 2 * cake.ys.len() / k;
+
     let mut us = Vec::new();
     let mut vs = Vec::new();
     for u in (step_x..cake.xs.len()).step_by(step_x) {
@@ -225,8 +229,38 @@ pub fn solve(input: &Input) {
     for v in (step_y..cake.ys.len()).step_by(step_y) {
         vs.push(v);
     }
-    let cut = Cut { us, vs };
-    println!("{}", cut.lines(&cake));
+
+    let mut best_cut = Cut { us, vs };
+    let pieces = best_cut.pieces(&cake);
+    let mut best_score = pieces.score(input);
+
+    // ランダムシード
+    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
+    // 山登り方
+    for _ in 0..10000 {
+        // 適当に縦の線を一個選んで動かす
+        let r = rng.gen_range(0, best_cut.us.len());
+
+        let orig_pos = best_cut.us[r];
+        let new_pos = if r == 0 {
+            rng.gen_range(best_cut.us[0], best_cut.us[r + 1])
+        } else if r == best_cut.us.len() - 1 {
+            rng.gen_range(best_cut.us[r - 1], best_cut.us[r])
+        } else {
+            rng.gen_range(best_cut.us[r - 1], best_cut.us[r + 1])
+        };
+
+        best_cut.us[r] = new_pos;
+        let pieces = best_cut.pieces(&cake);
+        let score = pieces.score(input);
+        if score > best_score {
+            best_score = score;
+            println!("{}", best_cut.lines(&cake));
+            eprintln!("{}", best_score);
+        } else {
+            best_cut.us[r] = orig_pos;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -255,6 +289,8 @@ mod tests {
         let lines = cut.lines(&cake);
         println!("{}", lines);
 
-        println!("{}", cut.score(&input, &cake));
+        let pieces = cut.pieces(&cake);
+        let score = pieces.score(&input);
+        println!("{}", score);
     }
 }
