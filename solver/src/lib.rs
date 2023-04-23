@@ -3,6 +3,7 @@
 
 use proconio::{input, source::Source};
 use rand::{Rng, SeedableRng};
+use rand_chacha::ChaCha8Rng;
 use std::io::BufRead;
 use std::iter;
 
@@ -159,6 +160,29 @@ impl Cut {
 
         Pieces { b }
     }
+
+    fn random_move(target: &mut Vec<usize>, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
+        let orig_pos = target[r];
+
+        let new_pos = if r == 0 {
+            rng.gen_range(target[0], target[1])
+        } else if r == target.len() - 1 {
+            rng.gen_range(target[r - 1] + 1, target[r] + 1)
+        } else {
+            // eprintln!("{:?} {} {}", target, target[r - 1] + 1, target[r + 1]);
+            rng.gen_range(target[r - 1] + 1, target[r + 1])
+        };
+        target[r] = new_pos;
+        (orig_pos, new_pos)
+    }
+
+    fn random_move_x(&mut self, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
+        Self::random_move(&mut self.us, r, rng)
+    }
+
+    fn random_move_y(&mut self, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
+        Self::random_move(&mut self.vs, r, rng)
+    }
 }
 
 // 座標圧縮して使いやすい状態になっているケーキ
@@ -237,28 +261,29 @@ pub fn solve(input: &Input) {
     // ランダムシード
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
     // 山登り方
-    for _ in 0..10000 {
+    for i in 0..10000 {
         // 適当に縦の線を一個選んで動かす
-        let r = rng.gen_range(0, best_cut.us.len());
-
-        let orig_pos = best_cut.us[r];
-        let new_pos = if r == 0 {
-            rng.gen_range(best_cut.us[0], best_cut.us[r + 1])
-        } else if r == best_cut.us.len() - 1 {
-            rng.gen_range(best_cut.us[r - 1], best_cut.us[r])
+        let (r, (orig_pos, new_pos)) = if i % 2 == 0 {
+            let r = rng.gen_range(0, best_cut.us.len());
+            (r, best_cut.random_move_x(r, &mut rng))
         } else {
-            rng.gen_range(best_cut.us[r - 1], best_cut.us[r + 1])
+            let r = rng.gen_range(0, best_cut.vs.len());
+            (r, best_cut.random_move_y(r, &mut rng))
         };
 
-        best_cut.us[r] = new_pos;
         let pieces = best_cut.pieces(&cake);
         let score = pieces.score(input);
         if score > best_score {
             best_score = score;
             println!("{}", best_cut.lines(&cake));
             eprintln!("{}", best_score);
+            // eprintln!("{:?}", best_cut.us);
         } else {
-            best_cut.us[r] = orig_pos;
+            if i % 2 == 0 {
+                best_cut.us[r] = orig_pos;
+            } else {
+                best_cut.vs[r] = orig_pos;
+            }
         }
     }
 }
