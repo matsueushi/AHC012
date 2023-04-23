@@ -34,7 +34,8 @@ aws --profile dev s3 cp ./in s3://procon-inputs/ahc012 --recursive
 
 # ローカルでの実行
 ```shell
-cargo run --bin solver < in/0000.txt > out/local/0000.txt
+cargo run --quiet --release --bin solver < in/0000.txt > out/local/0000.txt 2> out/local/stats.csv
+cargo run --release --bin solver < in/0000.txt > out/local/0000.txt
 ```
 
 # Lambda関数の実行

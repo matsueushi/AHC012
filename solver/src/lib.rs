@@ -239,6 +239,9 @@ impl Cake {
 }
 
 pub fn solve(input: &Input) {
+    let since = std::time::Instant::now();
+    eprintln!("round,time,score");
+
     let cake = Cake::new(&input);
 
     let k = input.k;
@@ -275,8 +278,9 @@ pub fn solve(input: &Input) {
         let score = pieces.score(input);
         if score > best_score {
             best_score = score;
-            println!("{}", best_cut.lines(&cake));
-            eprintln!("{}", best_score);
+            // println!("{}", best_cut.lines(&cake));
+            let t = since.elapsed().as_secs_f32();
+            eprintln!("{},{},{}", i, t, best_score);
             // eprintln!("{:?}", best_cut.us);
         } else {
             if i % 2 == 0 {
