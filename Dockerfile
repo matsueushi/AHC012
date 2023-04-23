@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     awscli \
  && pip3 install pandas \
     numpy \ 
+    seaborn \
+    flake8 \
     cargo-lambda \
  && rustup component add rustfmt \
  && git config --global gpg.program "$(which gpg)" \

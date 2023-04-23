@@ -264,6 +264,29 @@ pub fn solve(input: &Input) {
     // ランダムシード
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
     // 山登り方
+    // 最初は全体的に動かす
+    // for i in 0..100 {
+    //     // 適当に縦の線を一個選んで動かす
+    //     let mut cut = best_cut.clone();
+    //     for u in 0..cut.us.len() {
+    //         cut.random_move_x(u, &mut rng);
+    //     }
+    //     for v in 0..cut.vs.len() {
+    //         cut.random_move_y(v, &mut rng);
+    //     }
+
+    //     let pieces = cut.pieces(&cake);
+    //     let score = pieces.score(input);
+    //     if score > best_score {
+    //         best_cut = cut;
+    //         best_score = score;
+    //         // println!("{}", best_cut.lines(&cake));
+    //         let t = since.elapsed().as_secs_f32();
+    //         eprintln!("{},{},{}", i, t, best_score);
+    //     }
+    // }
+
+    // 一つづつ動かす
     for i in 0..10000 {
         // 適当に縦の線を一個選んで動かす
         let (r, (orig_pos, new_pos)) = if i % 2 == 0 {
