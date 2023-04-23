@@ -4,6 +4,7 @@
 use proconio::{input, source::Source};
 // use rand::{Rng, SeedableRng};
 use std::io::BufRead;
+use std::iter;
 
 const D_MAX: usize = 10;
 const L: i64 = 1_000_000_000;
@@ -33,8 +34,8 @@ impl Input {
 
 impl std::fmt::Display for Input {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {}", self.n, self.k)?;
-        write!(
+        writeln!(f, "{} {}", self.n, self.k)?;
+        writeln!(
             f,
             "{}",
             self.a
@@ -44,7 +45,7 @@ impl std::fmt::Display for Input {
                 .join(" ")
         )?;
         for &(x, y) in &self.xy {
-            write!(f, "{} {}", x, y)?;
+            writeln!(f, "{} {}", x, y)?;
         }
         Ok(())
     }
@@ -107,17 +108,6 @@ impl Cut {
         }
         cut_lines
     }
-
-    // スコアを計算したい
-    fn score(&self, cake: &Cake) {
-        let ss = vec![0; 10];
-        for u in 0..self.us.len() {
-            let x = cake.xs[u];
-            for v in 0..self.vs.len() {
-                let y = cake.ys[v];
-            }
-        }
-    }
 }
 
 // 座標圧縮して使いやすい状態になっているケーキ
@@ -161,6 +151,8 @@ impl Cake {
             }
         }
 
+        println!("{:?}", xs);
+        println!("{:?}", ys);
         Self { xs, ys, cs }
     }
 }
@@ -184,8 +176,6 @@ pub fn solve(input: &Input) {
     }
     let cut = Cut { us, vs };
     println!("{}", cut.lines(&cake));
-
-    cut.score(&cake);
 }
 
 #[cfg(test)]
@@ -199,14 +189,15 @@ mod tests {
             k: 10,
             a: vec![1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
             xy: vec![
-                (100, 100),
-                (200, 200),
-                (100, 200),
-                (300, 300),
-                (400, 400),
-                (500, 500),
+                (1000, 1000),
+                (2000, 2000),
+                (1000, 2000),
+                (3000, 3000),
+                (4000, 4000),
+                (5000, 5000),
             ],
         };
+        println!("input:");
         println!("{}", input);
     }
 }

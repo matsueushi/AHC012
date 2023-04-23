@@ -43,6 +43,11 @@ cargo run --bin solver < in/0000.txt > out/local/0000.txt
 aws --profile dev lambda invoke --function-name lambda-ahc012 --payload '{ "bucket_in" : "procon-inputs", "bucket_out" : "procon-outputs", "contest_name": "ahc012", "seed": 0 }' out/cloud/test.json
 ```
 
+# テスト
+```shell
+cargo test -- --nocapture
+```
+
 # 参考
 https://github.com/rust-lang-ja/atcoder-rust-resources
 https://github.com/rust-lang-ja/atcoder-rust-base/tree/ja
