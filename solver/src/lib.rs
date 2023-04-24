@@ -288,32 +288,40 @@ pub fn solve(input: &Input) {
 
     // 一つづつ動かす
     for i in 0..10000 {
+        let mut new_cut = best_cut.clone();
         // 適当に縦の線を一個選んで動かす
         let (r, (orig_pos, new_pos)) = if i % 2 == 0 {
-            let r = rng.gen_range(0, best_cut.us.len());
-            (r, best_cut.random_move_x(r, &mut rng))
+            let r = rng.gen_range(0, new_cut.us.len());
+            (r, new_cut.random_move_x(r, &mut rng))
         } else {
-            let r = rng.gen_range(0, best_cut.vs.len());
-            (r, best_cut.random_move_y(r, &mut rng))
+            let r = rng.gen_range(0, new_cut.vs.len());
+            (r, new_cut.random_move_y(r, &mut rng))
         };
 
-        let pieces = best_cut.pieces(&cake);
+        let pieces = new_cut.pieces(&cake);
         let score = pieces.score(input);
+
+        let t = since.elapsed().as_secs_f32();
+        log_score(i, t, score);
+
         if score > best_score {
+            best_cut = new_cut;
             best_score = score;
             // println!("{}", best_cut.lines(&cake));
-            let t = since.elapsed().as_secs_f32();
-            eprintln!("{},{},{}", i, t, best_score);
             // eprintln!("{:?}", best_cut.us);
-        } else {
-            if i % 2 == 0 {
-                best_cut.us[r] = orig_pos;
-            } else {
-                best_cut.vs[r] = orig_pos;
-            }
         }
     }
 }
+
+#[cfg(feature = "local")]
+fn log_score(i: i32, t: f32, score: usize) {
+    if i % 10 == 0 {
+        eprintln!("{},{},{}", i, t, score);
+    }
+}
+
+#[cfg(not(feature = "local"))]
+fn log_score(i: i32, t: f32, score: usize) {}
 
 #[cfg(test)]
 mod tests {
