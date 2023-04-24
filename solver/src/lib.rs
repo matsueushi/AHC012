@@ -244,50 +244,43 @@ pub fn solve(input: &Input) {
 
     let cake = Cake::new(&input);
 
-    let k = input.k;
-    let step_x = 2 * cake.xs.len() / k;
-    let step_y = 2 * cake.ys.len() / k;
+    let mut round = 0;
 
-    let mut us = Vec::new();
-    let mut vs = Vec::new();
-    for u in (step_x..cake.xs.len()).step_by(step_x) {
-        us.push(u);
-    }
-    for v in (step_y..cake.ys.len()).step_by(step_y) {
-        vs.push(v);
-    }
+    let mut best_cut = Cut {
+        us: Vec::new(),
+        vs: Vec::new(),
+    };
+    let mut best_score = 0;
 
-    let mut best_cut = Cut { us, vs };
-    let pieces = best_cut.pieces(&cake);
-    let mut best_score = pieces.score(input);
+    for i in 0..100 {
+        let k = input.k;
+        let step_x = 2 * cake.xs.len() / k;
+        let step_y = 2 * cake.ys.len() / k;
+
+        let mut us = Vec::new();
+        let mut vs = Vec::new();
+        for u in (step_x..cake.xs.len()).step_by(step_x) {
+            us.push(u);
+        }
+        for v in (step_y..cake.ys.len()).step_by(step_y) {
+            vs.push(v);
+        }
+
+        best_cut = Cut { us, vs };
+        let pieces = best_cut.pieces(&cake);
+        best_score = pieces.score(input);
+
+        let t = since.elapsed().as_secs_f32();
+        log_score(round, t, best_score);
+    }
 
     // ランダムシード
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
-    // 山登り方
-    // 最初は全体的に動かす
-    // for i in 0..100 {
-    //     // 適当に縦の線を一個選んで動かす
-    //     let mut cut = best_cut.clone();
-    //     for u in 0..cut.us.len() {
-    //         cut.random_move_x(u, &mut rng);
-    //     }
-    //     for v in 0..cut.vs.len() {
-    //         cut.random_move_y(v, &mut rng);
-    //     }
-
-    //     let pieces = cut.pieces(&cake);
-    //     let score = pieces.score(input);
-    //     if score > best_score {
-    //         best_cut = cut;
-    //         best_score = score;
-    //         // println!("{}", best_cut.lines(&cake));
-    //         let t = since.elapsed().as_secs_f32();
-    //         eprintln!("{},{},{}", i, t, best_score);
-    //     }
-    // }
 
     // 一つづつ動かす
     for i in 0..10000 {
+        round += 1;
+
         let mut new_cut = best_cut.clone();
         // 適当に縦の線を一個選んで動かす
         let (r, (orig_pos, new_pos)) = if i % 2 == 0 {
@@ -302,7 +295,7 @@ pub fn solve(input: &Input) {
         let score = pieces.score(input);
 
         let t = since.elapsed().as_secs_f32();
-        log_score(i, t, score);
+        log_score(round, t, score);
 
         if score > best_score {
             best_cut = new_cut;
@@ -314,14 +307,14 @@ pub fn solve(input: &Input) {
 }
 
 #[cfg(feature = "local")]
-fn log_score(i: i32, t: f32, score: usize) {
-    if i % 10 == 0 {
-        eprintln!("{},{},{}", i, t, score);
+fn log_score(round: i32, t: f32, score: usize) {
+    if round % 10 == 0 {
+        eprintln!("{},{},{}", round, t, score);
     }
 }
 
 #[cfg(not(feature = "local"))]
-fn log_score(i: i32, t: f32, score: usize) {}
+fn log_score(round: i32, t: f32, score: usize) {}
 
 #[cfg(test)]
 mod tests {
