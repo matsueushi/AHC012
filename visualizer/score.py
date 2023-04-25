@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # %%
-before_df = pd.read_csv("out/local/stats_before.csv")
-after_df = pd.read_csv("out/local/stats.csv")
+before_df = pd.read_csv("out/local/stats.csv")
+after_df = pd.read_csv("out/local/stats_after.csv")
 
 # %%
 sns.lineplot(data=before_df, x="round", y="score", label="bebore")

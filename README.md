@@ -36,7 +36,7 @@ aws --profile dev s3 cp ./in s3://procon-inputs/ahc012 --recursive
 ```shell
 cargo run --quiet --release --bin solver < in/0000.txt > out/local/0000.txt 2> out/local/stats.csv
 
-root@06deaae9b8ab:/home/jovyan/work# cargo run --quiet --release --bin solver < in/0000.txt > out/local/0000.txt 2> out/local/stats_after.csv
+cargo run --quiet --release --bin solver < in/0000.txt > out/local/0000.txt 2> out/local/stats_after.csv
 ```
 
 ```shell

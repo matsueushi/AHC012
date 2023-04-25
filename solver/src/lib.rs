@@ -252,8 +252,11 @@ pub fn solve(input: &Input) {
     };
     let mut best_score = 0;
 
-    for i in 0..100 {
-        let k = input.k;
+    // ランダムシード
+    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
+
+    for i in 10..100 {
+        let k = i;
         let step_x = 2 * cake.xs.len() / k;
         let step_y = 2 * cake.ys.len() / k;
 
@@ -266,16 +269,18 @@ pub fn solve(input: &Input) {
             vs.push(v);
         }
 
-        best_cut = Cut { us, vs };
-        let pieces = best_cut.pieces(&cake);
-        best_score = pieces.score(input);
+        let cut = Cut { us, vs };
+        let pieces = cut.pieces(&cake);
+        let score = pieces.score(input);
+
+        if score > best_score {
+            best_score = score;
+            best_cut = cut;
+        }
 
         let t = since.elapsed().as_secs_f32();
         log_score(round, t, best_score);
     }
-
-    // ランダムシード
-    let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
 
     // 一つづつ動かす
     for i in 0..10000 {
