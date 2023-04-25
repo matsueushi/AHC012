@@ -173,7 +173,7 @@ impl Cut {
         Pieces { b }
     }
 
-    fn random_move(target: &mut Vec<usize>, r: usize, rng: &mut ChaCha8Rng) {
+    fn random_move(target: &mut Vec<usize>, right: usize, r: usize, rng: &mut ChaCha8Rng) {
         let orig_pos = target[r];
 
         let new_pos = if r == 0 {
@@ -187,12 +187,12 @@ impl Cut {
         target[r] = new_pos;
     }
 
-    fn random_move_x(&mut self, r: usize, rng: &mut ChaCha8Rng) {
-        Self::random_move(&mut self.us, r, rng);
+    fn random_move_x(&mut self, cake: &Cake, r: usize, rng: &mut ChaCha8Rng) {
+        Self::random_move(&mut self.us, cake.xs.len(), r, rng);
     }
 
-    fn random_move_y(&mut self, r: usize, rng: &mut ChaCha8Rng) {
-        Self::random_move(&mut self.vs, r, rng);
+    fn random_move_y(&mut self, cake: &Cake, r: usize, rng: &mut ChaCha8Rng) {
+        Self::random_move(&mut self.vs, cake.ys.len(), r, rng);
     }
 }
 
@@ -304,25 +304,27 @@ pub fn solve(input: &Input) {
         // 適当に縦の線を一個選んで動かす
         if i % 2 == 0 {
             let r = rng.gen_range(0, new_cut.us.len());
-            new_cut.random_move_x(r, &mut rng);
+            new_cut.random_move_x(&cake, r, &mut rng);
         } else {
             let r = rng.gen_range(0, new_cut.vs.len());
-            new_cut.random_move_y(r, &mut rng);
+            new_cut.random_move_y(&cake, r, &mut rng);
         };
 
         let pieces = new_cut.pieces(&cake);
         let score = pieces.score(input);
 
         // 焼きなまし
-        let temp = ann_prob(score, best_score, i as f32 / 10000f32);
+        let temp = ann_temp(i as f32 / 10000f32);
         let threshold = ann_prob(score, best_score, temp);
         let prob = rng.sample(uniform);
+        println!("{} {}", prob, threshold);
+
         if score > best_score || prob > threshold {
             best_cut = new_cut;
             best_score = score;
             let t = since.elapsed().as_secs_f32();
             log_score(round, t, score);
-            println!("{}", best_cut.lines(&cake));
+            // println!("{}", best_cut.lines(&cake));
             // eprintln!("{:?}", best_cut.us);
         }
     }
