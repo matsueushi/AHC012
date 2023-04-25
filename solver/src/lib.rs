@@ -173,7 +173,7 @@ impl Cut {
         Pieces { b }
     }
 
-    fn random_move(target: &mut Vec<usize>, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
+    fn random_move(target: &mut Vec<usize>, r: usize, rng: &mut ChaCha8Rng) {
         let orig_pos = target[r];
 
         let new_pos = if r == 0 {
@@ -185,15 +185,14 @@ impl Cut {
             rng.gen_range(target[r - 1] + 1, target[r + 1])
         };
         target[r] = new_pos;
-        (orig_pos, new_pos)
     }
 
-    fn random_move_x(&mut self, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
-        Self::random_move(&mut self.us, r, rng)
+    fn random_move_x(&mut self, r: usize, rng: &mut ChaCha8Rng) {
+        Self::random_move(&mut self.us, r, rng);
     }
 
-    fn random_move_y(&mut self, r: usize, rng: &mut ChaCha8Rng) -> (usize, usize) {
-        Self::random_move(&mut self.vs, r, rng)
+    fn random_move_y(&mut self, r: usize, rng: &mut ChaCha8Rng) {
+        Self::random_move(&mut self.vs, r, rng);
     }
 }
 
@@ -303,12 +302,12 @@ pub fn solve(input: &Input) {
 
         let mut new_cut = best_cut.clone();
         // 適当に縦の線を一個選んで動かす
-        let (r, (orig_pos, new_pos)) = if i % 2 == 0 {
+        if i % 2 == 0 {
             let r = rng.gen_range(0, new_cut.us.len());
-            (r, new_cut.random_move_x(r, &mut rng))
+            new_cut.random_move_x(r, &mut rng);
         } else {
             let r = rng.gen_range(0, new_cut.vs.len());
-            (r, new_cut.random_move_y(r, &mut rng))
+            new_cut.random_move_y(r, &mut rng);
         };
 
         let pieces = new_cut.pieces(&cake);
