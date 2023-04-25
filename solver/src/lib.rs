@@ -2,6 +2,7 @@
 #![allow(dead_code)]
 
 use proconio::{input, source::Source};
+use rand::distributions::Uniform;
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 use std::io::BufRead;
@@ -9,6 +10,17 @@ use std::iter;
 
 const D_MAX: usize = 10;
 const L: i64 = 1_000_000_000;
+
+const START_TEMP: i64 = 500;
+const END_TEMP: i64 = 10;
+
+fn ann_temp(t: f32) -> f32 {
+    START_TEMP as f32 + (END_TEMP - START_TEMP) as f32 * t
+}
+
+fn ann_prob(best_score: usize, next_score: usize, temp: f32) -> f32 {
+    ((next_score as f32 - best_score as f32) / temp).exp()
+}
 
 // 入力
 
@@ -71,12 +83,12 @@ impl CutLines {
 
     fn add_vertical(&mut self, x: i64) {
         self.k += 1;
-        self.lines.push((x, -L, x + 1, L));
+        self.lines.push((x, -L, (x + 1).min(L), L));
     }
 
     fn add_horizontal(&mut self, y: i64) {
         self.k += 1;
-        self.lines.push((-L, y, L, y + 1));
+        self.lines.push((-L, y, L, (y + 1).min(L)));
     }
 }
 
@@ -255,7 +267,8 @@ pub fn solve(input: &Input) {
     // ランダムシード
     let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(0);
 
-    for i in 10..100 {
+    for i in 20..=100 {
+        round += 1;
         let k = i;
         let step_x = 2 * cake.xs.len() / k;
         let step_y = 2 * cake.ys.len() / k;
@@ -276,13 +289,15 @@ pub fn solve(input: &Input) {
         if score > best_score {
             best_score = score;
             best_cut = cut;
+            // let t = since.elapsed().as_secs_f32();
+            // log_score(round, t, best_score);
+            // println!("{}", best_cut.lines(&cake));
         }
-
-        let t = since.elapsed().as_secs_f32();
-        log_score(round, t, best_score);
     }
 
     // 一つづつ動かす
+    let uniform = Uniform::new(0.0f32, 1.0f32);
+
     for i in 0..10000 {
         round += 1;
 
@@ -299,13 +314,16 @@ pub fn solve(input: &Input) {
         let pieces = new_cut.pieces(&cake);
         let score = pieces.score(input);
 
-        let t = since.elapsed().as_secs_f32();
-        log_score(round, t, score);
-
-        if score > best_score {
+        // 焼きなまし
+        let temp = ann_prob(score, best_score, i as f32 / 10000f32);
+        let threshold = ann_prob(score, best_score, temp);
+        let prob = rng.sample(uniform);
+        if score > best_score || prob > threshold {
             best_cut = new_cut;
             best_score = score;
-            // println!("{}", best_cut.lines(&cake));
+            let t = since.elapsed().as_secs_f32();
+            log_score(round, t, score);
+            println!("{}", best_cut.lines(&cake));
             // eprintln!("{:?}", best_cut.us);
         }
     }
@@ -313,9 +331,7 @@ pub fn solve(input: &Input) {
 
 #[cfg(feature = "local")]
 fn log_score(round: i32, t: f32, score: usize) {
-    if round % 10 == 0 {
-        eprintln!("{},{},{}", round, t, score);
-    }
+    eprintln!("{},{},{}", round, t, score);
 }
 
 #[cfg(not(feature = "local"))]
