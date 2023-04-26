@@ -315,11 +315,10 @@ pub fn solve(input: &Input) {
 
         // 焼きなまし
         let temp = ann_temp(i as f32 / 10000f32);
-        let threshold = ann_prob(score, best_score, temp);
+        let threshold = ann_prob(best_score, score, temp);
         let prob = rng.sample(uniform);
-        println!("{} {}", prob, threshold);
 
-        if score > best_score || prob > threshold {
+        if score > best_score || prob < threshold {
             best_cut = new_cut;
             best_score = score;
             let t = since.elapsed().as_secs_f32();
