@@ -322,7 +322,7 @@ pub fn solve(input: &Input) {
             best_score = score;
             let t = since.elapsed().as_secs_f32();
             log_score(round, t, score);
-            // println!("{}", best_cut.lines(&cake));
+            println!("{}", best_cut.lines(&cake));
             // eprintln!("{:?}", best_cut.us);
         }
     }
