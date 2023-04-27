@@ -177,11 +177,10 @@ impl Cut {
         let orig_pos = target[r];
 
         let new_pos = if r == 0 {
-            rng.gen_range(target[0], target[1])
+            rng.gen_range(0, target[1])
         } else if r == target.len() - 1 {
-            rng.gen_range(target[r - 1] + 1, target[r] + 1)
+            rng.gen_range(target[r - 1] + 1, right)
         } else {
-            // eprintln!("{:?} {} {}", target, target[r - 1] + 1, target[r + 1]);
             rng.gen_range(target[r - 1] + 1, target[r + 1])
         };
         target[r] = new_pos;
@@ -288,9 +287,6 @@ pub fn solve(input: &Input) {
         if score > best_score {
             best_score = score;
             best_cut = cut;
-            // let t = since.elapsed().as_secs_f32();
-            // log_score(round, t, best_score);
-            // println!("{}", best_cut.lines(&cake));
         }
     }
 
@@ -302,13 +298,16 @@ pub fn solve(input: &Input) {
 
         let mut new_cut = best_cut.clone();
         // 適当に縦の線を一個選んで動かす
-        if i % 2 == 0 {
-            let r = rng.gen_range(0, new_cut.us.len());
-            new_cut.random_move_x(&cake, r, &mut rng);
-        } else {
-            let r = rng.gen_range(0, new_cut.vs.len());
-            new_cut.random_move_y(&cake, r, &mut rng);
-        };
+        match i % 2 {
+            0 => {
+                let r = rng.gen_range(0, new_cut.us.len());
+                new_cut.random_move_x(&cake, r, &mut rng);
+            }
+            _ => {
+                let r = rng.gen_range(0, new_cut.vs.len());
+                new_cut.random_move_y(&cake, r, &mut rng);
+            }
+        }
 
         let pieces = new_cut.pieces(&cake);
         let score = pieces.score(input);
